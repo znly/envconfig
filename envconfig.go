@@ -124,7 +124,7 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 
 		if f.Kind() == reflect.Struct {
 			// honor Decode if present
-			if decoderFrom(f) == nil && setterFrom(f) == nil && textUnmarshaler(f) == nil && binaryUnmarshaler(f) == nil  {
+			if decoderFrom(f) == nil && setterFrom(f) == nil && textUnmarshaler(f) == nil && binaryUnmarshaler(f) == nil {
 				innerPrefix := prefix
 				if !ftype.Anonymous {
 					innerPrefix = info.Key
@@ -203,7 +203,7 @@ func Process(prefix string, spec interface{}) error {
 			continue
 		}
 
-		err = processField(value, info.Field)
+		err = ProcessField(value, info.Field)
 		if err != nil {
 			return &ParseError{
 				KeyName:   info.Key,
@@ -225,7 +225,7 @@ func MustProcess(prefix string, spec interface{}) {
 	}
 }
 
-func processField(value string, field reflect.Value) error {
+func ProcessField(value string, field reflect.Value) error {
 	typ := field.Type()
 
 	decoder := decoderFrom(field)
@@ -296,7 +296,7 @@ func processField(value string, field reflect.Value) error {
 		vals := strings.Split(value, ",")
 		sl := reflect.MakeSlice(typ, len(vals), len(vals))
 		for i, val := range vals {
-			err := processField(val, sl.Index(i))
+			err := ProcessField(val, sl.Index(i))
 			if err != nil {
 				return err
 			}
@@ -312,12 +312,12 @@ func processField(value string, field reflect.Value) error {
 					return fmt.Errorf("invalid map item: %q", pair)
 				}
 				k := reflect.New(typ.Key()).Elem()
-				err := processField(kvpair[0], k)
+				err := ProcessField(kvpair[0], k)
 				if err != nil {
 					return err
 				}
 				v := reflect.New(typ.Elem()).Elem()
-				err = processField(kvpair[1], v)
+				err = ProcessField(kvpair[1], v)
 				if err != nil {
 					return err
 				}
